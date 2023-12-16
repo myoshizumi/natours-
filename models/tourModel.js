@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const validator = require('validator');
 
 const tourSchema = new mongoose.Schema(
     {
@@ -17,6 +18,10 @@ const tourSchema = new mongoose.Schema(
                 10,
                 'A tour name must have less or equal to 10 characters',
             ],
+            // validate: [
+            //     validator.isAlpha,
+            //     'A tour name can only contain letters',
+            // ],
         },
         slug: String,
         duration: {
@@ -49,7 +54,17 @@ const tourSchema = new mongoose.Schema(
             type: Number,
             required: [true, 'A tour must have a price'],
         },
-        priceDiscount: Number,
+        priceDiscount: {
+            type: Number,
+            validate: {
+                validator: function (val) {
+                    // this only points to current doc on NEW document creation
+                    return val < this.price;
+                },
+                message:
+                    'Discount price ({VALUE}) must be less than or equal to price',
+            },
+        },
         summary: {
             type: String,
             trim: true,
