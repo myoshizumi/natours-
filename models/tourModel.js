@@ -1,7 +1,8 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+/* eslint-disable no-console */
+/* eslint-disable import/no-extraneous-dependencies */
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-const validator = require('validator');
+// const validator = require('validator');
 
 const tourSchema = new mongoose.Schema(
     {
@@ -117,7 +118,7 @@ tourSchema.pre('save', function (next) {
 
 // Query Middleware
 tourSchema.pre(/^find/, function (next) {
-// tourSchema.pre('find', function (next) {
+    // tourSchema.pre('find', function (next) {
     this.find({ secretTour: { $ne: true } });
 
     this.start = Date.now();
