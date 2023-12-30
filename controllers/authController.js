@@ -35,6 +35,7 @@ exports.signup = catchAsync(async (req, res, next) => {
         passwordChangedAt: req.body.passwordChangedAt,
         passwordResetExpires: req.body.passwordResetExpires,
         passwordResetToken: req.body.passwordResetToken,
+        active: req.body.active,
         role: req.body.role,
     });
 
