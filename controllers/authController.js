@@ -16,7 +16,17 @@ const signToken = function (id) {
 
 const createSendToken = (user, statusCode, res) => {
     const token = signToken(user._id);
-
+    const cookieOptions = {
+        expires: new Date(
+            Date.now() +
+                process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+        ),
+        httpOnly: true,
+    };
+    if (process.env.NODE_ENV === 'production') cookieOptions.sucure = true;
+    res.cookie('jwt', token, cookieOptions);
+    // Remove password from output
+    user.password = undefined;
     res.status(statusCode).json({
         status: 'success',
         token,
@@ -38,7 +48,6 @@ exports.signup = catchAsync(async (req, res, next) => {
         active: req.body.active,
         role: req.body.role,
     });
-
     createSendToken(newUser, 201, res);
 });
 
@@ -66,7 +75,6 @@ exports.protect = catchAsync(async (req, res, next) => {
     ) {
         token = req.headers.authorization.split(' ')[1];
     }
-
     if (!token) {
         return next(
             new AppError(
@@ -131,14 +139,12 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     )}/api/v1/users/resetPassword/${resetToken}}`;
 
     const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}. \nIf you didn't forgot your password, please ignore this email. `;
-
     try {
         await sendEmail({
             email: user.email,
             subject: 'Your password reset token (valid for 10 min)',
             message,
         });
-
         res.status(200).json({
             status: 'success',
             message: 'Token sent to email!',
@@ -162,7 +168,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
         .createHash('sha256')
         .update(req.params.token)
         .digest('hex');
-
     const user = await User.findOne({
         passwordResetToken: hashedToken,
         passwordResetExpires: { $gt: Date.now() },
@@ -177,7 +182,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save();
-
     // 3) Update changePasswordAt property for the user
 
     // 4) Log the user in, send JWT
@@ -187,7 +191,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 exports.updatePassword = catchAsync(async (req, res, next) => {
     // 1) Get user from collection
     const user = await User.findById(req.user.id).select('+password');
-
     // 2) Check if POSTed current password is correct
     if (
         !(await user.correctPassword(req.body.passwordCurrent, user.password))
@@ -199,7 +202,6 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
     user.passwordConfirm = req.body.passwordConfirm;
     await user.save();
     // User.findByIdAndUpdate will NOT work as intended!
-
     // 4) Log user in, send JWT
     createSendToken(user, 200, res);
 });
