@@ -7,7 +7,7 @@ const reviewSchema = new mongoose.Schema(
             type: String,
             required: [true, 'Review can not be empty!'],
         },
-        ratng: {
+        rating: {
             type: Number,
             min: 1,
             max: 5,
@@ -34,10 +34,14 @@ const reviewSchema = new mongoose.Schema(
 );
 
 reviewSchema.pre(/^find/, function (next) {
+    // this.populate({
+    //     path: 'tour',
+    //     select: 'name',
+    // }).populate({
+    //     path: 'user',
+    //     select: 'name photo',
+    // });
     this.populate({
-        path: 'tour',
-        select: 'name',
-    }).populate({
         path: 'user',
         select: 'name photo',
     });
