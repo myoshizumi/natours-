@@ -25,7 +25,20 @@ app.use(express.static(path.join(__dirname, '/public')));
 
 // 1) Global Middlewares
 // Set security HTTP headers
-app.use(helmet());
+// app.use(helmet());
+app.use(
+    helmet.contentSecurityPolicy({
+        directives: {
+            defaultSrc: ["'self'", 'blob:', 'https://*.mapbox.com'],
+            scriptSrc: [
+                "'self'",
+                'https://*.mapbox.com',
+                "'unsafe-inline'",
+                'blob:',
+            ],
+        },
+    }),
+);
 //Development logging
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
